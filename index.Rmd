@@ -1,0 +1,78 @@
+---
+title: "Places where I lived, learned and worked"
+author: "Sander Smit"
+date: "12/29/2020"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Welcome!
+And thank you for reviewing this assignment. On the interactive map below, you'll see where I have lived, learned or worked. If you click on one of the markers, you'll be redirected to a website with more information (only if available). Have fun!
+
+```{r map, echo = FALSE, message = FALSE}
+
+# loading packages
+library(dplyr)
+library(leaflet)
+
+# data frames to be used
+dta.his <- read.table(text = "cat; from; till; name;                            address;                      city;      lat;                lng;                url
+                              liv; 1979; 2003; residence;                       Burgemeester Meineszlaan 112; Rotterdam; 51.9193076590259;   4.449510313448778;  NA
+                              liv; 2003; 2006; student complex;                 Rivierstraat 95;              Rotterdam; 51.90632322029134;  4.475467655777846;  'https://tinyurl.com/y9eatoao'
+                              liv; 2006; 2010; student complex;                 Rivierstraat 33;              Rotterdam; 51.90634939686396;  4.47577810734003;   'https://tinyurl.com/y9eatoao'
+                              liv; 2010; 2011; residence;                       Boomgaardsstraat 144;         Rotterdam; 51.91507272639218;  4.478171553362933;  'https://tinyurl.com/yc7st4rd'
+                              liv; 2011; 2019; residence;                       Boomgaardsstraat 128;         Rotterdam; 51.9151366368173;   4.4777829785050915; 'https://tinyurl.com/yc7st4rd'
+                              liv; 2019; 2020; residence;                       Willemstraat 12;              Delft;     52.01055379336442;  4.350703822684855;  NA
+                              sch; 1984; 1992; van Oldenbarneveltschool;        Jagthuisstraat 14;            Rotterdam; 51.92137312362367;  4.450457250947937;  'https://tinyurl.com/ybh8bvxa'
+                              sch; 1992; 1998; City College Sint Franciscus;    Beukelsdijk 91;               Rotterdam; 51.922380132264024; 4.4590527035882905; 'https://tinyurl.com/yadxac47'
+                              sch; 1998; 1999; Albeda College;                  Breitnerstraat 92;            Rotterdam; 51.913818768471124; 4.467629147198394;  'https://www.albeda.nl'
+                              sch; 1999; 1999; Leiden University;               Einsteinweg 2;                Leiden;    52.1656079781619;   4.4637468999042165; 'https://tinyurl.com/yb574l9v'
+                              sch; 2000; 2006; Utrecht University;              Heidelberglaan 8;             Utrecht;   52.085326878090875; 5.176129855158745;  'https://tinyurl.com/yczhtnab'
+                              sch; 2003; 2006; Erasmus University;              Burg. Oudlaan 50;             Rotterdam; 51.91592795875033;  4.526877472339983;  'https://tinyurl.com/y7joa9sn'
+                              wrk; 1991; 1994; Stipt Grocery Store;             Burgemeester Meineszlaan 99;  Rotterdam; 51.91938977600066;  4.450438757564929;  NA
+                              wrk; 1991; 1994; Keyboardsound B.V.;              Rozenlaan 2;                  Rotterdam; 51.94520847502707;  4.474323524470992;  'https://www.correct.nl'
+                              wrk; 1999; 2001; Holland Logistics Couriers B.V.; Kiotoweg 301-305;             Rotterdam; 51.941677950769616; 4.400516321753725;  'http://skynet.nl'
+                              wrk; 2001; 2001; Easyway Automotive Support B.V.; Markendaalseweg 63;           Breda;     51.58489423948616;  4.7749370900806305; 'https://www.easyway.nl'
+                              wrk; 2002; 2002; Operator Group Delft B.V.;       Rotterdamseweg 380;           Delft;     51.990541494208756; 4.373749622625899;  'https://ogd.nl'
+                              wrk; 2002; 2005; Intermax B.V.;                   Schouwburgplein 30;           Rotterdam; 51.920441874969946; 4.474880190094021;  'https://intermax.nl'
+                              wrk; 2005; 2006; ProSensa B.V.;                   J.H. Oortweg 21;              Leiden;    52.16784025458841;  4.464182311551592;  'https://biomarin.com'
+                              wrk; 2006; 2007; Accenture B.V.;                  Gustav Mahlerplein 90;        Amsterdam; 52.337065389579706; 4.87364142448666;   'https://accenture.nl'
+                              wrk; 2008; 2017; Tilburg University;              Warandelaan 2;                Tilburg;   51.56416189938035;  5.043946420761996;  'https://www.tilburguniversity.edu'
+                              wrk; 2018; 2018; Radboud University;              Houtlaan 4;                   Nijmegen;  51.81674764436386;  5.865398293783681;  'https://www.ru.nl/english/'
+                              wrk; 2018; 2020; Vrije Universiteit;              De Boelelaan 1105;            Amsterdam; 52.33437197397623;  4.867403080310208;  \'https://www.vu.nl/en/\'",
+                       header = TRUE,
+                       sep = ";",
+                       strip.white = TRUE,
+                       stringsAsFactors = FALSE)
+
+dta.col <- read.table(text = "cat; col
+                              liv; red
+                              sch; orange
+                              wrk; green",
+                      header = TRUE,
+                      sep = ";",
+                      strip.white = TRUE,
+                      stringsAsFactors = FALSE)
+
+dta.his <- merge(dta.his, dta.col)
+
+# making the graph
+map <- leaflet() %>% # creating a map widget
+       addProviderTiles("CartoDB.Positron") %>% # add Positron basemap from CartoDB 
+       setView(lng = 5, lat = 52, zoom = 8) %>% # set location
+       addCircleMarkers(lat = dta.his$lat, # add markers
+                  lng = dta.his$lng,
+                  color = dta.his$col,
+                  radius = 0.5*(1 + dta.his$till - dta.his$from),
+                  clusterOptions = markerClusterOptions(),
+                  popup = paste("<a href=\'",dta.his$url,"\'>", dta.his$name, "</a", sep = "")) %>%
+       addLegend(labels = c("lived", "went to school", "worked", "", "marker size denotes duration in years"), colors = c(dta.col$col, "white", "white"))
+map
+
+
+```
